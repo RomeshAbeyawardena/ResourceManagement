@@ -52,6 +52,13 @@ public class CheckInResourceHandler : IRequestHandler<CheckInResourceCommand, Ch
             {
                 request.ResourceUserAccessId = userAccess.Id;
             }
+            else
+            {
+                return new CheckInResourceResponse
+                {
+                    Status = "Resource User Access Id not found"
+                };
+            }
         }
         else if (request.ResourceUserAccessId.HasValue)
         {
@@ -72,9 +79,21 @@ public class CheckInResourceHandler : IRequestHandler<CheckInResourceCommand, Ch
 
         if (!request.ResourceUserAccessId.HasValue)
         {
+            var parameterList = new List<string>();
+
+            if (!request.ResourceId.HasValue)
+            {
+                parameterList.Add("ResourceId");
+            }
+
+            if (!request.UserId.HasValue)
+            {
+                parameterList.Add("UserId");
+            }
+
             return new CheckInResourceResponse
             {
-                Status = "Unable to check in resource, parameters not supplied"
+                Status = $"Unable to check in resource, parameters not supplied: {string.Join(',',parameterList)}"
             };
         }
 
