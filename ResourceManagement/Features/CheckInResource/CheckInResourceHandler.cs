@@ -56,13 +56,16 @@ public class CheckInResourceHandler : IRequestHandler<CheckInResourceCommand, Ch
             {
                 return new CheckInResourceResponse
                 {
-                    Status = "Resource User Access Id not found"
+                    Status = "Unable to check in resource, access not found"
                 };
             }
         }
         else if (request.ResourceUserAccessId.HasValue)
         {
-            var resourceUserAccesses = await mediator.Send(new ResourceUserAccess.GetQuery { Id = request.ResourceUserAccessId }, cancellationToken);
+            var resourceUserAccesses = await mediator.Send(
+                new ResourceUserAccess.GetQuery { 
+                    Id = request.ResourceUserAccessId 
+                }, cancellationToken);
 
             if (!await resourceUserAccesses.AnyAsync(cancellationToken))
             {

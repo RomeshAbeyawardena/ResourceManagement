@@ -91,4 +91,43 @@ public class CheckInResourceTests
         Assert.That(response.IsSuccess, Is.False);
         Assert.That(response.Status, Is.EqualTo("Unable to check in resource, parameters not supplied: UserId"));
     }
+
+    [Test]
+    public async Task Handles_Resource_not_CheckedOut()
+    {
+        var actualUserId = Guid.NewGuid();
+        var actualResourceId = Guid.NewGuid();
+        var cancellationToken = CancellationToken.None;
+
+        var resources = new List<Features.Models.Resource> {
+            new Features.Models.Resource { 
+                Id = actualResourceId, 
+                ResourceUserAccess = new List<Features.Models.ResourceUserAccess>() 
+            }
+        };
+
+        mediator.Send(new Features.Resource.GetQuery { Id = actualResourceId }, cancellationToken)
+            .Returns(resources.BuildMock());
+
+        var users = new List<Features.Models.User> {
+            new Features.Models.User { Id = actualUserId, 
+                ResourceUserAccesses = new List<Features.Models.ResourceUserAccess>()
+            }
+        };
+
+        mediator.Send(new Features.User.GetQuery { Id = actualUserId }, cancellationToken)
+            .Returns(users.BuildMock());
+
+        var handler = new CheckInResourceHandler(mapper, mediator, clockProvider);
+
+        var response = await handler.Handle(
+            new CheckInResourceCommand
+            {
+                ResourceId = actualResourceId,
+                UserId = actualUserId
+            },
+            cancellationToken);
+        Assert.That(response.IsSuccess, Is.False);
+        Assert.That(response.Status, Is.Empty);
+    }
 }
